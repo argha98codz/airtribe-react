@@ -10,25 +10,43 @@ import { useNavigate } from "react-router-dom";
 import { Grid, Card, Image, Text, Badge, Button, Group, Space, Pagination, Select, LoadingOverlay, NumberInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import useFetchProductListing from "../services/product/useFetchProductListing";
+import isUserAuth from "../utils/helper";
 const Home = () => {
-    const wishlist = JSON.parse(localStorage.getItem("airtribe-user-wishlist"));
-    const [wishlistState, setWishlist] = useState([]);
+    const [wishlistState, setWishlist] = useState(() => JSON.parse(localStorage.getItem("airtribe-user-wishlist")));
+    const [cart, addToCart] = useState([]);
     const navigate = useNavigate();
     const {products, activePage, limit, setActivePage, setLimit, loading, errorState} = useFetchProductListing('category?type=mobile');
+    const [isProductAddedToCart, setIsProductAddedToCart] = useState({});
+
     useEffect(() => {
-        setWishlist(wishlist);
-    },[wishlist])
+        if (products.length) {
+            const productMap = products.reduce((acc, product,index) => {
+                acc[product.id] = false;
+                return acc;
+            },{})
+            setIsProductAddedToCart(productMap);
+        }
+    },[products])
+    console.log(isProductAddedToCart);
     const handleAddToWishList = (e, product) => {
         e.stopPropagation();
         // Check if user is authenticated or not
-        const isAuth = localStorage.getItem('airtribe-user-auth');
-        if (!isAuth || isAuth !== 'authenticated' ) {
+        // const isAuth = localStorage.getItem('airtribe-user-auth');
+        // if (!isAuth || isAuth !== 'authenticated' ) {
+        //     notifications.show({
+        //         title: 'Unauthrorized',
+        //         message: 'Please login',
+        //         color: "red"
+        //     })
+        //     return;
+        // }
+        if(!isUserAuth()) {
             notifications.show({
                 title: 'Unauthrorized',
                 message: 'Please login',
                 color: "red"
             })
-            return;
+            return null
         }
         const wishlist = JSON.parse(localStorage.getItem('airtribe-user-wishlist'));
         if (!wishlist) {
@@ -54,6 +72,82 @@ const Home = () => {
             return true;
         }
     }
+    const handleAddToCart = (e, product) => {
+        e.stopPropagation();
+        if (!isUserAuth()) {
+            notifications.show({
+                title: 'Unauthrorized',
+                message: 'Please login',
+                color: "red"
+            })
+            return null
+        }
+        addToCart(prev => [...prev, {product: product.id, quantity: 1}]);
+        setIsProductAddedToCart(prev => ({
+            ...prev,
+            [product.id]: true
+        }))
+    }
+
+    const handleReduceQuantity = (e, id) => {
+        e.stopPropagation();
+        if (!isUserAuth()) {
+            notifications.show({
+                title: 'Unauthrorized',
+                message: 'Please login',
+                color: "red"
+            })
+            return null
+        }
+        const addedProduct = cart.find(item => item.product === id);
+        if (addedProduct.quantity === 1) {
+            const modifiedCart = cart.filter(item => item.product !== id);
+            addToCart(modifiedCart);
+            setIsProductAddedToCart(prev => ({
+                ...prev,
+                [id]: false
+            }))
+        }
+        if (addedProduct.quantity > 1) {
+            const modifiedCart = cart.map(item => {
+                if (item.product === id) {
+                    return {
+                        ...item,
+                        quantity: item.quantity - 1
+                    }
+                }
+                return item;
+            })
+            addToCart(modifiedCart);
+        }
+    }
+
+    const handleIncreaseQuantity = (e, id) => {
+        e.stopPropagation();
+        if (!isUserAuth()) {
+            notifications.show({
+                title: 'Unauthrorized',
+                message: 'Please login',
+                color: "red"
+            })
+            return null
+        }
+        const addedProduct = cart.find(item => item.product === id);
+        if (addedProduct.quantity < 10) {
+            const modifiedCart = cart.map(item => {
+                if (item.product === id) {
+                    return {
+                        ...item,
+                        quantity: item.quantity + 1
+                    }
+                }
+                return item;
+            })
+            addToCart(modifiedCart);
+        }
+    }
+
+    const handleQuantityChange = (e,id) => {/* Implement this */}
     if (loading) {
         return <LoadingOverlay visible={true} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
     }
@@ -98,12 +192,18 @@ const Home = () => {
                             >
                             {wishlistState.find(item => item.id === product.id) ? 'Wishlisted' : 'Add to wishlist'}
                             </Button> */}
+                            {console.log(cart)}
+                            {isProductAddedToCart[product.id] ? 
+                            <Group justify="stretch" align="center" gap={5}>
+                                <Button onClick={(e) => handleReduceQuantity(e, product.id)}>-</Button>
+                                <NumberInput value={cart.find(item => item.product === product.id)?.quantity} onChange={(e) => handleQuantityChange(e, product.id)} />
+                                <Button onClick={(e) => handleIncreaseQuantity(e, product.id)}>+</Button>
+                            </Group> : 
                             <Button 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                }} color="purple" fullWidth mt="md" radius="md">
+                                onClick={(e) => handleAddToCart(e,product)} color="purple" fullWidth mt="md" radius="md">
                             Add To Cart
                             </Button>
+                            }
                             
                         </Card>
                     </Grid.Col>
@@ -140,6 +240,4 @@ export default Home;
     3. The + and - buttons must be connected to the input field such that when the + button is clicked, the input field value increases by 1 and when the - button is clicked, the input field value decreases by 1.
     4. On the above change, change the totalPrice and the quantity key of the product in the cart
     5. (Optional) - Implment a feature in which a user can directly input the qunatity in the field and that should be updated in the cart product (debouncing here...)    
-
-
 */
