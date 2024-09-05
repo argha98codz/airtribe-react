@@ -7,7 +7,6 @@ import AppRouter from './routes/route.jsx'
 import { store } from './store/store.js';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
-import './index.css'
 
 const theme = createTheme({});
 

@@ -1,36 +1,12 @@
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-
-import { NavLink } from 'react-router-dom';
-
-
+import { HeaderMenu } from '../components/HeaderMenu';
 
 function AppContainer(props) {
     const user = useSelector(state => state.user);
     return (
         <>
-            <header>
-                <nav>
-                    <ul>
-                        <li>
-                        <NavLink
-                            to="/products"
-                            className={({ isActive, isPending }) =>
-                                isPending ? "pending" : isActive ? "active" : ""
-                            }
-                            >
-                            Products
-                        </NavLink>
-                        </li>
-                        <li>
-                            <Link to="/wishlist">Wishlist</Link>
-                        </li>
-                        <li>Cart</li>
-                    </ul>
-                </nav>
-                {user.user.email}
-            </header>
+            <HeaderMenu user={user} />
             {props.children}
         </>
     )

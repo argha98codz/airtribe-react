@@ -4,7 +4,6 @@ import { Group, Stack, Image } from "@mantine/core";
 const ProductDetails = () => {
     const [product, setProduct] = useState(null);
     const params = useParams();
-    console.log(params);
     const { productid } = params;
 
     useEffect(() => {

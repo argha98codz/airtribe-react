@@ -13,7 +13,7 @@ export default function useFetchProductListing(optionalQuery = "") {
         async function fetchData() {
             try {
                 setLoading(true);
-                const data = await fetch(`https://fakestoreapi.in/api/products/${optionalQuery}&page=${activePage}&limit=${limit}`);
+                const data = await fetch(`https://fakestoreapi.in/api/products?page=${activePage}&limit=${limit}`);
                 const dataJson = await data.json();
                 setProducts(dataJson.products);
                 setLoading(false);

@@ -6,6 +6,8 @@ import LoginPage from "../pages/Login";
 import PrivateRoutes from "./PrivateRoutes";
 import ProductDetails from "../pages/ProductDetails";
 import AppContainer from "../pages/AppContainer";
+import WishlistPage from "../components/WishlistPage";
+import CartPage from "../components/CartPage";
 
 
 const routes = createBrowserRouter(
@@ -18,7 +20,6 @@ const routes = createBrowserRouter(
         path: "/",
         element:    <AppContainer>
                         <PrivateRoutes />
-                        <h1>Hello world!</h1>
                     </AppContainer>,
         children: [
             {
@@ -37,7 +38,11 @@ const routes = createBrowserRouter(
             },
             {
                 path: "/wishlist",
-                element: <h1>Wishlist</h1>,
+                element: <WishlistPage />,
+            },
+            {
+                path: "/cart",
+                element: <CartPage />,
             },
             {
                 path: "*",
